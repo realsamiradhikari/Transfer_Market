@@ -7,7 +7,9 @@ import java.util.List;
 import javax.swing.table.DefaultTableModel;
 import java.awt.Color;
 import javax.swing.JOptionPane;
-
+import com.transfermarket.controller.datastructure.Algorithms;
+import javax.swing.JTable;
+import java.awt.Rectangle;
 /**
  *
  * @author Samir Adhikari
@@ -25,8 +27,9 @@ public class TransferMarket extends javax.swing.JFrame {
         initComponents();
         transferList = new LinkedList<>();
         initializeLayout(); // Set up CardLayout and add screens
-        startProgress();// Show loading screen and initiate progress
-        
+        startProgress();
+         // Show loading screen and initiate progress
+        initialTable();
         // Add table mouse listener
         tblTransfer.addMouseListener(new java.awt.event.MouseAdapter() {
             public void mouseClicked(java.awt.event.MouseEvent evt) {
@@ -46,7 +49,7 @@ public class TransferMarket extends javax.swing.JFrame {
         txtMarketValue.setText(String.valueOf(player.getMarketValue()));
         txtContractDuration.setText(String.valueOf(player.getContractDuration()));
         txtGoalContribution.setText(String.valueOf(player.getGoalContribution()));
-        
+        txtPlayerId.setEnabled(false); 
         btnAdd.setEnabled(false);
         btnUpdate.setEnabled(true);
         btnDelete.setEnabled(true);
@@ -89,11 +92,15 @@ public class TransferMarket extends javax.swing.JFrame {
         lblErrorPlayerId = new javax.swing.JLabel();
         lblErrorPlayerName = new javax.swing.JLabel();
         lblErrorContractDuration = new javax.swing.JLabel();
-        lblErrorPosition = new javax.swing.JLabel();
         lblErrorAge = new javax.swing.JLabel();
         lblErrorMarketValue = new javax.swing.JLabel();
         lblErrorNationality = new javax.swing.JLabel();
         lblErrorGA = new javax.swing.JLabel();
+        lblErrorPosition = new javax.swing.JLabel();
+        comboSorting = new javax.swing.JComboBox<>();
+        btnSort = new javax.swing.JButton();
+        txtSearchValue = new javax.swing.JTextField();
+        btnSearch = new javax.swing.JButton();
         pnlAboutUs = new javax.swing.JPanel();
         pnlLoginScreen = new javax.swing.JPanel();
         pnlLoginLeft = new javax.swing.JPanel();
@@ -227,7 +234,7 @@ public class TransferMarket extends javax.swing.JFrame {
         }
 
         lblTblTransferTitle.setBackground(new java.awt.Color(255, 255, 255));
-        lblTblTransferTitle.setFont(new java.awt.Font("Segoe UI", 1, 24)); // NOI18N
+        lblTblTransferTitle.setFont(new java.awt.Font("Segoe UI", 1, 40)); // NOI18N
         lblTblTransferTitle.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
         lblTblTransferTitle.setText("Transfer List");
 
@@ -271,7 +278,7 @@ public class TransferMarket extends javax.swing.JFrame {
             }
         });
 
-        comboNationality.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Country", "Argentina", "Brazil", "Spain", "England", "France", "Nepal", "Belgium", "Slovakia", "Hungary" }));
+        comboNationality.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Country", "Argentina", "Brazil", "Spain", "England", "France", "Nepal", "Belgium", "Slovakia", "Hungary", "Portugal" }));
         comboNationality.setBorder(javax.swing.BorderFactory.createTitledBorder("Nationality"));
 
         txtMarketValue.setBorder(javax.swing.BorderFactory.createTitledBorder("Market Value"));
@@ -301,9 +308,6 @@ public class TransferMarket extends javax.swing.JFrame {
         lblErrorContractDuration.setFont(new java.awt.Font("Helvetica Neue", 0, 9)); // NOI18N
         lblErrorContractDuration.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 
-        lblErrorPosition.setFont(new java.awt.Font("Helvetica Neue", 0, 10)); // NOI18N
-        lblErrorPosition.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-
         lblErrorAge.setFont(new java.awt.Font("Helvetica Neue", 0, 10)); // NOI18N
         lblErrorAge.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 
@@ -316,112 +320,151 @@ public class TransferMarket extends javax.swing.JFrame {
         lblErrorGA.setFont(new java.awt.Font("Helvetica Neue", 0, 10)); // NOI18N
         lblErrorGA.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
 
+        lblErrorPosition.setFont(new java.awt.Font("Helvetica Neue", 0, 9)); // NOI18N
+        lblErrorPosition.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+
+        comboSorting.setFont(new java.awt.Font("Helvetica Neue", 0, 10)); // NOI18N
+        comboSorting.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Options", "Age", "G/A", "Country" }));
+        comboSorting.setBorder(javax.swing.BorderFactory.createTitledBorder(null, "Sort By", javax.swing.border.TitledBorder.DEFAULT_JUSTIFICATION, javax.swing.border.TitledBorder.DEFAULT_POSITION, new java.awt.Font("Helvetica Neue", 0, 10))); // NOI18N
+        comboSorting.setPreferredSize(new java.awt.Dimension(75, 45));
+
+        btnSort.setText("Sort");
+        btnSort.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSortActionPerformed(evt);
+            }
+        });
+
+        txtSearchValue.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtSearchValueActionPerformed(evt);
+            }
+        });
+
+        btnSearch.setIcon(new javax.swing.ImageIcon(getClass().getResource("/com/transfermarket/resources/search.png"))); // NOI18N
+        btnSearch.setMinimumSize(new java.awt.Dimension(50, 50));
+        btnSearch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSearchActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout pnlTransferListLayout = new javax.swing.GroupLayout(pnlTransferList);
         pnlTransferList.setLayout(pnlTransferListLayout);
         pnlTransferListLayout.setHorizontalGroup(
             pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlTransferListLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(lblTblTransferTitle, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addGap(39, 39, 39))
-            .addGroup(pnlTransferListLayout.createSequentialGroup()
-                .addGap(21, 21, 21)
-                .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(spTblTransfer, javax.swing.GroupLayout.PREFERRED_SIZE, 1062, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGroup(pnlTransferListLayout.createSequentialGroup()
-                        .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(txtAge, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtPlayerId, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(lblErrorPlayerId, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(lblErrorAge, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(77, 77, 77)
-                        .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                            .addGroup(pnlTransferListLayout.createSequentialGroup()
-                                .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(txtMarketValue, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(lblErrorMarketValue, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(110, 110, 110)
-                                .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(lblErrorNationality, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                    .addComponent(comboNationality, 0, 185, Short.MAX_VALUE)))
-                            .addGroup(pnlTransferListLayout.createSequentialGroup()
-                                .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
-                                    .addComponent(lblErrorPlayerName, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                    .addComponent(txtPlayerName, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE))
-                                .addGap(102, 102, 102)
-                                .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                    .addComponent(txtContractDuration, javax.swing.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
-                                    .addComponent(lblErrorContractDuration, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                                .addGap(8, 8, 8)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                        .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                                .addComponent(lblErrorGA, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addComponent(txtGoalContribution, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
-                                .addComponent(lblErrorPosition, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                            .addComponent(comboPosition, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 195, javax.swing.GroupLayout.PREFERRED_SIZE))))
-                .addContainerGap(45, Short.MAX_VALUE))
-            .addGroup(pnlTransferListLayout.createSequentialGroup()
-                .addGap(60, 60, 60)
-                .addComponent(btnAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(171, 171, 171)
-                .addComponent(btnClear, javax.swing.GroupLayout.PREFERRED_SIZE, 104, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(203, 203, 203)
-                .addComponent(btnDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(79, 79, 79)
+                .addComponent(btnAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(172, 172, 172)
+                .addComponent(btnClear, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(199, 199, 199)
+                .addComponent(btnDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                .addComponent(btnUpdate, javax.swing.GroupLayout.PREFERRED_SIZE, 90, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(83, 83, 83))
+                .addComponent(btnUpdate)
+                .addGap(121, 121, 121))
+            .addGroup(pnlTransferListLayout.createSequentialGroup()
+                .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(pnlTransferListLayout.createSequentialGroup()
+                        .addGap(37, 37, 37)
+                        .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                                .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                                    .addComponent(lblErrorPlayerId, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                    .addComponent(txtPlayerId, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addComponent(txtAge, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGroup(pnlTransferListLayout.createSequentialGroup()
+                                .addGap(6, 6, 6)
+                                .addComponent(lblErrorAge, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addGap(71, 71, 71)
+                        .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(lblErrorMarketValue, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                                .addComponent(lblErrorPlayerName, javax.swing.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
+                                .addComponent(txtMarketValue, javax.swing.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
+                                .addComponent(txtPlayerName)))
+                        .addGap(92, 92, 92)
+                        .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(lblErrorNationality, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 185, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                                .addComponent(lblErrorContractDuration, javax.swing.GroupLayout.PREFERRED_SIZE, 169, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(txtContractDuration, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 185, Short.MAX_VALUE)
+                                .addComponent(comboNationality, javax.swing.GroupLayout.Alignment.TRAILING, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                        .addGap(126, 126, 126)
+                        .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                            .addComponent(txtGoalContribution, javax.swing.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
+                            .addComponent(comboPosition, 0, 195, Short.MAX_VALUE)
+                            .addComponent(lblErrorGA, javax.swing.GroupLayout.DEFAULT_SIZE, 195, Short.MAX_VALUE)
+                            .addComponent(lblErrorPosition, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(pnlTransferListLayout.createSequentialGroup()
+                        .addGap(21, 21, 21)
+                        .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addComponent(spTblTransfer, javax.swing.GroupLayout.PREFERRED_SIZE, 1062, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(pnlTransferListLayout.createSequentialGroup()
+                                .addComponent(comboSorting, javax.swing.GroupLayout.PREFERRED_SIZE, 137, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(68, 68, 68)
+                                .addComponent(btnSort, javax.swing.GroupLayout.PREFERRED_SIZE, 80, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(28, 28, 28)
+                                .addComponent(lblTblTransferTitle, javax.swing.GroupLayout.PREFERRED_SIZE, 476, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(txtSearchValue, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addGap(44, 44, 44)
+                                .addComponent(btnSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)))))
+                .addContainerGap(45, Short.MAX_VALUE))
         );
         pnlTransferListLayout.setVerticalGroup(
             pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(pnlTransferListLayout.createSequentialGroup()
-                .addContainerGap()
-                .addComponent(lblTblTransferTitle, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(spTblTransfer, javax.swing.GroupLayout.PREFERRED_SIZE, 259, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(18, 18, 18)
                 .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlTransferListLayout.createSequentialGroup()
-                        .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(txtPlayerName, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(txtContractDuration, javax.swing.GroupLayout.PREFERRED_SIZE, 59, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(18, 18, 18)
-                        .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(lblErrorPlayerName, javax.swing.GroupLayout.PREFERRED_SIZE, 23, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(lblErrorContractDuration, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addGap(30, 30, 30))
                     .addGroup(pnlTransferListLayout.createSequentialGroup()
-                        .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                            .addGroup(pnlTransferListLayout.createSequentialGroup()
-                                .addComponent(comboPosition, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(lblErrorPosition, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                                .addGap(10, 10, 10))
-                            .addGroup(pnlTransferListLayout.createSequentialGroup()
-                                .addComponent(txtPlayerId, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addGap(18, 18, 18)
-                                .addComponent(lblErrorPlayerId, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
-                .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(txtAge, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtMarketValue, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(comboNationality, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(txtGoalContribution, javax.swing.GroupLayout.PREFERRED_SIZE, 61, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addGap(18, 18, 18)
-                .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                        .addGap(30, 30, 30)
                         .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                            .addComponent(lblErrorMarketValue, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE)
-                            .addComponent(lblErrorNationality, javax.swing.GroupLayout.PREFERRED_SIZE, 26, javax.swing.GroupLayout.PREFERRED_SIZE))
-                        .addComponent(lblErrorAge, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(lblErrorGA, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-                .addGap(35, 35, 35)
+                            .addComponent(comboSorting, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(btnSort, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(lblTblTransferTitle, javax.swing.GroupLayout.PREFERRED_SIZE, 57, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(20, 20, 20))
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, pnlTransferListLayout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING)
+                            .addComponent(btnSearch, javax.swing.GroupLayout.PREFERRED_SIZE, 48, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(txtSearchValue, javax.swing.GroupLayout.PREFERRED_SIZE, 45, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addGap(37, 37, 37)))
+                .addComponent(spTblTransfer, javax.swing.GroupLayout.PREFERRED_SIZE, 247, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(28, 28, 28)
                 .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(btnAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnClear, javax.swing.GroupLayout.PREFERRED_SIZE, 41, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(btnUpdate, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(129, Short.MAX_VALUE))
+                    .addComponent(txtPlayerId, javax.swing.GroupLayout.PREFERRED_SIZE, 62, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtPlayerName, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtContractDuration, javax.swing.GroupLayout.PREFERRED_SIZE, 60, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(comboPosition, javax.swing.GroupLayout.PREFERRED_SIZE, 62, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(lblErrorPlayerName, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblErrorContractDuration, javax.swing.GroupLayout.PREFERRED_SIZE, 20, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblErrorPosition, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(lblErrorPlayerId, javax.swing.GroupLayout.PREFERRED_SIZE, 33, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(22, 22, 22)
+                .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(txtMarketValue, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(comboNationality)
+                    .addComponent(txtGoalContribution, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(txtAge, javax.swing.GroupLayout.PREFERRED_SIZE, 64, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(pnlTransferListLayout.createSequentialGroup()
+                            .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                .addComponent(lblErrorNationality, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addComponent(lblErrorGA, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE))
+                            .addGap(5, 5, 5))
+                        .addComponent(lblErrorAge, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.PREFERRED_SIZE, 24, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(lblErrorMarketValue, javax.swing.GroupLayout.PREFERRED_SIZE, 19, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(pnlTransferListLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(btnClear, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnDelete, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnUpdate, javax.swing.GroupLayout.PREFERRED_SIZE, 32, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(btnAdd, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(131, Short.MAX_VALUE))
         );
 
         tabPaneMain.addTab("Transfer List", pnlTransferList);
@@ -711,6 +754,26 @@ public class TransferMarket extends javax.swing.JFrame {
         worker.execute(); // Start the worker thread
     }
     
+    private void initialTable(){
+        TransferModel transfer=new TransferModel(1, "Lionel Messi", "CB", "Argentina",
+                  34, 300000, 48, 112);
+        transferList.add(transfer);
+        registerPlayer(transfer);
+        TransferModel transfer1=new TransferModel(2, "Samir Adhikari", "AMF", "Nepal",
+                  20, 1000, 12, 10);
+        transferList.add(transfer1);
+        registerPlayer(transfer1);
+        TransferModel transfer2=new TransferModel(3, "Cristiano Ronaldo", "ST", "Portugal",
+                  39, 100000, 36, 70);
+        transferList.add(transfer2);
+        registerPlayer(transfer2);
+        TransferModel transfer3=new TransferModel(4, "Lamine Yamal", "RWF", "Spain",
+                  17, 50000, 36, 70);
+        transferList.add(transfer3);
+        registerPlayer(transfer3);
+        
+    }
+    
     
 
     
@@ -792,7 +855,7 @@ public class TransferMarket extends javax.swing.JFrame {
                 //Know the user response
                 if(response == JOptionPane.YES_OPTION){
                     // Create the player entity and add that entity to the list and table after user's confirmation.
-                    TransferModel player = new TransferModel(playerId, playerName, playerPosition, nationality, age, marketValue, contractDuration, goalContribution);
+                    TransferModel player = new TransferModel(playerId, playerName, playerPosition, nationality , age, marketValue, contractDuration, goalContribution);
                     transferList.add(player);
                     registerPlayer(player); 
                     JOptionPane.showMessageDialog(this, "Player added successfully!");
@@ -852,11 +915,6 @@ public class TransferMarket extends javax.swing.JFrame {
         ValidationUtil.resetComboBoxBorder(comboPosition);
         ValidationUtil.resetComboBoxBorder(comboNationality);
     }
-   
-    
-
-
-    
    
     /**
      * Switches the application screen to the specified screen name.
@@ -945,6 +1003,7 @@ public class TransferMarket extends javax.swing.JFrame {
         {
             clearAllFields();
             btnAdd.setEnabled(true);
+            txtPlayerId.setEnabled(true);
         }
         
     }//GEN-LAST:event_btnClearActionPerformed
@@ -983,6 +1042,7 @@ public class TransferMarket extends javax.swing.JFrame {
                 JOptionPane.INFORMATION_MESSAGE);    
         }
         btnAdd.setEnabled(true);
+        txtPlayerId.setEnabled(true);
         
     }//GEN-LAST:event_btnDeleteActionPerformed
 
@@ -1047,12 +1107,13 @@ public class TransferMarket extends javax.swing.JFrame {
             int goalContribution=Integer.parseInt(goalContributionString);
             // Check for duplicate PlayerID, excluding the current player
             boolean isDuplicate = false;
-            for (int i = 0; i < transferList.size(); i++) {
-                if (i != selectedRow && transferList.get(i).getPlayerId() == playerId) {
-                    isDuplicate = true;
-                    break;
-                }
-            }
+//            txtPlayerId.setEnabled(false);
+//            for (int i = 0; i < transferList.size(); i++) {
+//                if (i != selectedRow && transferList.get(i).getPlayerId() == playerId) {
+//                    isDuplicate = true;
+//                    break;
+//                }
+//            }
             if (isDuplicate) {
                 lblErrorPlayerId.setText("Player ID already exists.");
                 lblErrorPlayerId.setForeground(Color.RED);
@@ -1086,8 +1147,7 @@ public class TransferMarket extends javax.swing.JFrame {
                     
                 clearAllFields();
                 btnAdd.setEnabled(true);
-//                btnUpdate.setEnabled(false);
-//                btnDelete.setEnabled(false);
+                txtPlayerId.setEnabled(true);
             }
             else{
                 JOptionPane.showMessageDialog(this,"Update canceled.", "Canceled", JOptionPane.INFORMATION_MESSAGE);
@@ -1097,6 +1157,84 @@ public class TransferMarket extends javax.swing.JFrame {
         }
     
     }//GEN-LAST:event_btnUpdateActionPerformed
+
+    private void btnSortActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSortActionPerformed
+        // This button helps us to sort the Linked list and the table on the basis of the option selected in the combobox:
+        String selectedOption = comboSorting.getSelectedItem().toString();
+        sortPlayers(selectedOption);       
+    }//GEN-LAST:event_btnSortActionPerformed
+
+    // Method to sort the LinkedList and update the table
+    private void sortPlayers(String criteria) {
+        switch (criteria) {
+            case "Age":
+                transferList = Algorithms.mergeSortByAge(transferList); // Merge Sort
+                break;
+            case "Country":
+                transferList = Algorithms.selectionSortByNationality(transferList); // Selection Sort
+                break;
+            case "G/A":
+                transferList = Algorithms.insertionSortByGoalContribution(transferList); // Insertion Sort
+                break;
+            default:
+                JOptionPane.showMessageDialog(this, "Please select a valid sorting option.");
+                return;
+        }
+
+        // Update the table with the sorted list
+        updateTable();
+    }
+    
+    // Update the table with sorted data
+    private void updateTable() {
+        DefaultTableModel model = (DefaultTableModel) tblTransfer.getModel();
+        model.setRowCount(0);
+
+        for (TransferModel player : transferList) {
+            model.addRow(new Object[]{
+                    player.getPlayerId(),
+                    player.getPlayerName(),
+                    player.getPosition(),
+                    player.getNationality(),
+                    player.getAge(),
+                    player.getMarketValue(),
+                    player.getContractDuration(),
+                    player.getGoalContribution()
+            });
+        }
+    }
+    
+ 
+    
+    private void txtSearchValueActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchValueActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtSearchValueActionPerformed
+
+    // Method to highlight the row in the table
+    public void highlightRow(JTable tblTransfer, int rowIndex) {
+        if (rowIndex >= 0) {
+            // Select and scroll to the row
+            tblTransfer.setRowSelectionInterval(rowIndex, rowIndex);
+            tblTransfer.scrollRectToVisible(new Rectangle(tblTransfer.getCellRect(rowIndex, 0, true)));
+        } else {
+            JOptionPane.showMessageDialog(null, "Nationality not found!", "Search Result", JOptionPane.INFORMATION_MESSAGE);
+        }
+    }
+    
+    private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
+    String searchNationality = txtSearchValue.getText().trim();
+
+    if (!searchNationality.isEmpty()) {
+        // Use the binarySearchByNationality method from Algorithms class
+        int rowIndex = Algorithms.binarySearchByNationality(transferList, searchNationality);
+
+        // Highlight the row in the table
+        highlightRow(tblTransfer, rowIndex);
+    } else {
+        JOptionPane.showMessageDialog(null, "Please enter a nationality to search.", "Error", JOptionPane.ERROR_MESSAGE);
+    }
+ 
+    }//GEN-LAST:event_btnSearchActionPerformed
 
     /**
      * @param args the command line arguments
@@ -1141,9 +1279,12 @@ public class TransferMarket extends javax.swing.JFrame {
     private javax.swing.JButton btnDelete;
     private javax.swing.JButton btnLogin;
     private javax.swing.JButton btnLogout;
+    private javax.swing.JButton btnSearch;
+    private javax.swing.JButton btnSort;
     private javax.swing.JButton btnUpdate;
     private javax.swing.JComboBox<String> comboNationality;
     private javax.swing.JComboBox<String> comboPosition;
+    private javax.swing.JComboBox<String> comboSorting;
     private javax.swing.JLabel lblErrorAge;
     private javax.swing.JLabel lblErrorContractDuration;
     private javax.swing.JLabel lblErrorGA;
@@ -1183,5 +1324,6 @@ public class TransferMarket extends javax.swing.JFrame {
     private javax.swing.JTextField txtMarketValue;
     private javax.swing.JTextField txtPlayerId;
     private javax.swing.JTextField txtPlayerName;
+    private javax.swing.JTextField txtSearchValue;
     // End of variables declaration//GEN-END:variables
 }
